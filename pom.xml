@@ -12,13 +12,17 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <telegrambots.version>5.7.1</telegrambots.version>
+        <mysql.version>8.0.28</mysql.version>
+        <hikari.version>5.0.1</hikari.version>
         <slf4j.version>1.7.35</slf4j.version>
         <logback.version>1.2.10</logback.version>
         <lombok.version>1.18.22</lombok.version>
         <javax.version>2.0.1.Final</javax.version>
         <javax.el.version>3.0.0</javax.el.version>
-        <hibernate.version>6.2.1.Final</hibernate.version>
+        <validator.version>6.2.1.Final</validator.version>
         <eclipse-collection.version>11.0.0</eclipse-collection.version>
+        <jupiter.version>5.8.2</jupiter.version>
+        <easy-random.version>5.0.0</easy-random.version>
     </properties>
 
     <dependencies>
@@ -26,6 +30,18 @@
             <groupId>org.telegram</groupId>
             <artifactId>telegrambots</artifactId>
             <version>${telegrambots.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${hikari.version}</version>
         </dependency>
 
         <!-- Logger Tools -->
@@ -47,25 +63,6 @@
             <version>${logback.version}</version>
         </dependency>
 
-        <!-- Validation Tools -->
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>${javax.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate.validator</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>${hibernate.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.el</artifactId>
-            <version>${javax.el.version}</version>
-        </dependency>
-
         <!-- Development Tools -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -83,6 +80,20 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
             <version>${eclipse-collection.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jeasy</groupId>
+            <artifactId>easy-random-core</artifactId>
+            <version>${easy-random.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
