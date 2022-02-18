@@ -1,6 +1,5 @@
 package id.my.btw.util;
 
-import id.btw.util.ConnectionUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
