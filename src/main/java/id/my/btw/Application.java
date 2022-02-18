@@ -1,8 +1,8 @@
-package id.btw;
+package id.my.btw;
 
-import id.btw.bot.MoneyTrackerBot;
-import id.btw.repository.ExpenseRepository;
-import id.btw.repository.ExpenseRepositoryImpl;
+import id.my.btw.bot.MoneyTrackerBot;
+import id.my.btw.repository.ExpenseRepository;
+import id.my.btw.repository.ExpenseRepositoryImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;

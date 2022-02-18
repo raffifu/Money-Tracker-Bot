@@ -104,7 +104,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.0.0</version>
                 <configuration>
-                    <mainClass>id.btw.Application</mainClass>
+                    <mainClass>id.my.btw.Application</mainClass>
                 </configuration>
             </plugin>
         </plugins>

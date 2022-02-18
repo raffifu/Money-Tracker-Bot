@@ -1,4 +1,4 @@
-package id.btw.entity;
+package id.my.btw.entity;
 
 import lombok.Builder;
 import lombok.Getter;
