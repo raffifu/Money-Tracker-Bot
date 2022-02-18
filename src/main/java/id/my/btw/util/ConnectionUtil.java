@@ -1,4 +1,4 @@
-package id.btw.util;
+package id.my.btw.util;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
