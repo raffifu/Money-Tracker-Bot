@@ -1,8 +1,6 @@
 package id.my.btw.repository;
 
-import id.btw.entity.Expense;
-import id.btw.repository.ExpenseRepository;
-import id.btw.repository.ExpenseRepositoryImpl;
+import id.my.btw.entity.Expense;
 import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.Test;
 
