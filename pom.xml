@@ -107,6 +107,16 @@
                     <mainClass>id.my.btw.Application</mainClass>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <from>
+                        <image>eclipse-temurin:11-jre-alpine</image>
+                    </from>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
