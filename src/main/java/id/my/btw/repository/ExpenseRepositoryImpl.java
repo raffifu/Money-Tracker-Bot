@@ -50,6 +50,21 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
 
     @Override
     public void update(Expense expense) {
+        try (Connection connection = ConnectionUtil.getDataSource().getConnection()) {
+            String sql = "UPDATE expense SET name = ?, amount = ?, description = ?, date = ? WHERE id = ?";
 
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, expense.getName());
+                statement.setInt(2, expense.getAmount());
+                statement.setString(3, expense.getDescription());
+                statement.setObject(4, expense.getDate());
+                statement.setLong(5, expense.getId());
+
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            log.error("Error while inserting expense", e);
+            throw new RuntimeException(e);
+        }
     }
 }
