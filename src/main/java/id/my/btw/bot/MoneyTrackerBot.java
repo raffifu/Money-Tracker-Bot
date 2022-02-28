@@ -78,9 +78,24 @@ public class MoneyTrackerBot extends TelegramLongPollingBot {
                     .date(LocalDate.now(ZoneId.of("Asia/Jakarta")))
                     .build();
 
-            expenseRepository.insert(expense);
+            if (message.isReply()) {
+                log.info("Edit existing expense");
 
-            execute(responseMessage(message, expense));
+                Integer id = MessageUtil.getId(message.getReplyToMessage().getText());
+                if (id == null)
+                    throw new TelegramApiException("Invalid Message");
+
+                expense.setId(id);
+                expenseRepository.update(expense);
+
+                execute(responseRefreshMessage(message, expense));
+                execute(responseUpdateMessage(message));
+            } else {
+                log.info("Add new expense");
+
+                expenseRepository.insert(expense);
+                execute(responseMessage(message, expense));
+            }
         }
     }
 
@@ -93,10 +108,12 @@ public class MoneyTrackerBot extends TelegramLongPollingBot {
             Integer id = MessageUtil.getId(message.getText());
             log.info("Deleting message with messageId {} and id {}", message.getMessageId(), id);
 
-            if (id != null) {
-                expenseRepository.delete(id);
-                execute(responseDeleteCallback(callbackQuery.getMessage()));
-            }
+            if (id == null)
+                throw new TelegramApiException("Invalid Message");
+
+            expenseRepository.delete(id);
+            execute(responseDeleteCallback(callbackQuery.getMessage()));
+
         } else if (CallbackData.CANCEL_DELETE.equals(callbackQuery.getData())) {
             execute(responseCancelDeleteCallback(callbackQuery.getMessage()));
         }
@@ -110,6 +127,24 @@ public class MoneyTrackerBot extends TelegramLongPollingBot {
                 .text(ResponseFormatter.onSucceedExpensePayload(expense))
                 .replyMarkup(KeyboardUtil.deletePad())
                 .replyToMessageId(message.getMessageId())
+                .parseMode(ParseMode.MARKDOWN)
+                .build();
+    }
+
+    private SendMessage responseUpdateMessage(Message message) {
+        return SendMessage.builder()
+                .chatId(message.getChatId().toString())
+                .replyToMessageId(message.getMessageId())
+                .text("Success, update in database")
+                .build();
+    }
+
+    private EditMessageText responseRefreshMessage(Message message, Expense expense) {
+        return EditMessageText.builder()
+                .chatId(message.getChatId().toString())
+                .messageId(message.getReplyToMessage().getMessageId())
+                .text(ResponseFormatter.onSucceedExpensePayload(expense))
+                .replyMarkup(KeyboardUtil.deletePad())
                 .parseMode(ParseMode.MARKDOWN)
                 .build();
     }
