@@ -1,5 +1,6 @@
 package id.my.btw.util;
 
+import com.vdurmont.emoji.EmojiParser;
 import id.my.btw.entity.Expense;
 
 import java.text.NumberFormat;
@@ -11,10 +12,15 @@ public class ResponseFormatter {
         String amountFormatted = NumberFormat
                 .getCurrencyInstance(new Locale("id", "ID"))
                 .format(expense.getAmount());
-        return "EXPENSE DETAIL\n" +
-                "\uD83D\uDCB0 : " + amountFormatted + "\n" +
-                "\uD83C\uDFAD : " + expense.getName() + "\n" +
-                "\uD83D\uDCCD : " + expense.getDescription() + "\n" +
-                "\uD83D\uDCC5 : " + expense.getDate().format(DateTimeFormatter.ofPattern("d LLL yyyy"));
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("*EXPENSE DETAIL*\n")
+                .append(":moneybag: : ").append(amountFormatted).append("\n")
+                .append(":performing_arts: : ").append(expense.getName()).append("\n")
+                .append(":round_pushpin: : ").append(expense.getDescription()).append("\n")
+                .append(":date: : ").append(expense.getDate().format(DateTimeFormatter.ofPattern("d LLL yyyy"))).append("\n")
+                .append("\n_Reply to edit (").append(expense.getId()).append(")_");
+
+        return EmojiParser.parseToUnicode(sb.toString());
     }
 }

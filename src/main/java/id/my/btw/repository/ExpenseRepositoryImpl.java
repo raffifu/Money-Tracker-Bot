@@ -31,4 +31,25 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void delete(Integer id) {
+        try (Connection connection = ConnectionUtil.getDataSource().getConnection()) {
+            String sql = "DELETE FROM expense WHERE id = ?";
+
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setLong(1, id);
+
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            log.error("Error while inserting expense", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void update(Expense expense) {
+
+    }
 }
