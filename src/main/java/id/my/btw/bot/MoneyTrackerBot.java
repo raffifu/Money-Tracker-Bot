@@ -1,8 +1,9 @@
 package id.my.btw.bot;
 
-import com.vdurmont.emoji.EmojiManager;
+import id.my.btw.CallbackData;
 import id.my.btw.entity.Expense;
 import id.my.btw.repository.ExpenseRepository;
+import id.my.btw.util.KeyboardUtil;
 import id.my.btw.util.MessageUtil;
 import id.my.btw.util.ResponseFormatter;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +16,6 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.time.LocalDate;
@@ -24,9 +23,6 @@ import java.time.ZoneId;
 
 @Slf4j
 public class MoneyTrackerBot extends TelegramLongPollingBot {
-
-    private final String CALLBACK_DELETE_DATA = "DELETE";
-
     private final ExpenseRepository expenseRepository;
 
     public MoneyTrackerBot(ExpenseRepository expenseRepository) {
@@ -91,7 +87,9 @@ public class MoneyTrackerBot extends TelegramLongPollingBot {
     private void handleIncomingCallback(CallbackQuery callbackQuery) throws TelegramApiException {
         Message message = callbackQuery.getMessage();
 
-        if (CALLBACK_DELETE_DATA.equals(callbackQuery.getData())) {
+        if (CallbackData.DELETE.equals(callbackQuery.getData())) {
+            execute(responseConfirmDeleteCallback(message));
+        } else if (CallbackData.CONFIRM_DELETE.equals(callbackQuery.getData())) {
             Integer id = MessageUtil.getId(message.getText());
             log.info("Deleting message with messageId {} and id {}", message.getMessageId(), id);
 
@@ -99,28 +97,39 @@ public class MoneyTrackerBot extends TelegramLongPollingBot {
                 expenseRepository.delete(id);
                 execute(responseDeleteCallback(callbackQuery.getMessage()));
             }
+        } else if (CallbackData.CANCEL_DELETE.equals(callbackQuery.getData())) {
+            execute(responseCancelDeleteCallback(callbackQuery.getMessage()));
         }
     }
 
     private SendMessage responseMessage(Message message, Expense expense) {
         log.info("Sending validation success message");
 
-        InlineKeyboardButton deleteButton = InlineKeyboardButton.builder()
-                .text(EmojiManager.getForAlias("basket").getUnicode() + " Delete")
-                .callbackData(CALLBACK_DELETE_DATA)
-                .build();
-
-        MutableList<InlineKeyboardButton> keyboardButtons = Lists.mutable.of(deleteButton);
-
-        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
-                .keyboardRow(keyboardButtons)
-                .build();
-
         return SendMessage.builder()
                 .chatId(message.getChatId().toString())
                 .text(ResponseFormatter.onSucceedExpensePayload(expense))
-                .replyMarkup(markup)
+                .replyMarkup(KeyboardUtil.deletePad())
                 .replyToMessageId(message.getMessageId())
+                .parseMode(ParseMode.MARKDOWN)
+                .build();
+    }
+
+    private EditMessageText responseConfirmDeleteCallback(Message message) {
+        return EditMessageText.builder()
+                .chatId(message.getChatId().toString())
+                .messageId(message.getMessageId())
+                .replyMarkup(KeyboardUtil.confirmDeletePad())
+                .text(message.getText())
+                .parseMode(ParseMode.MARKDOWN)
+                .build();
+    }
+
+    private EditMessageText responseCancelDeleteCallback(Message message) {
+        return EditMessageText.builder()
+                .chatId(message.getChatId().toString())
+                .messageId(message.getMessageId())
+                .replyMarkup(KeyboardUtil.deletePad())
+                .text(message.getText())
                 .parseMode(ParseMode.MARKDOWN)
                 .build();
     }
