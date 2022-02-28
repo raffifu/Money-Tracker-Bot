@@ -5,7 +5,7 @@ Telegram Bot for tracking your money.
 ## Feature
 
 - [x] Record expense
-- [ ] Edit/Delete expense
+- [x] Edit/Delete expense
 - [ ] Show report (daily/weekly/monthly)
 
 ## How to run
