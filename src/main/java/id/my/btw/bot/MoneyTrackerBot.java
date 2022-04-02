@@ -1,6 +1,7 @@
 package id.my.btw.bot;
 
 import id.my.btw.CallbackData;
+import id.my.btw.entity.Category;
 import id.my.btw.entity.Expense;
 import id.my.btw.repository.ExpenseRepository;
 import id.my.btw.util.CommonUtil;
@@ -15,6 +16,8 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.util.Optional;
 
 @Slf4j
 public class MoneyTrackerBot extends TelegramLongPollingBot {
@@ -61,16 +64,23 @@ public class MoneyTrackerBot extends TelegramLongPollingBot {
         if (message.isReply()) {
             log.info("Edit existing expense");
 
-            Integer id = CommonUtil.getId(message.getReplyToMessage().getText());
-            if (id == null)
-                throw new TelegramApiException("Invalid Message");
+            Integer id = Optional
+                    .ofNullable(CommonUtil.getId(message.getText()))
+                    .orElseThrow(() -> new TelegramApiException("Invalid Message"));
 
-            Expense expense = CommonUtil.getExpense(message);
+            Expense expense = Optional
+                    .ofNullable(CommonUtil.getExpense(message))
+                    .orElseThrow(() -> new TelegramApiException("Cannot parse message"));
             expense.setId(id);
+
             expenseRepository.update(expense);
 
-            execute(responseRefreshMessage(message, expense));
-            execute(responseUpdateMessage(message));
+            EditMessageText editMessage = baseEditMessage(message, ResponseFormatter.onSucceedExpensePayload(expense));
+            editMessage.setMessageId(message.getReplyToMessage().getMessageId());
+            execute(editMessage);
+
+            SendMessage sendMessage = baseSendMessage(message, "Success, update in database");
+            execute(sendMessage);
         } else if (message.isCommand()) {
             // TODO: Handle command
             log.info("Received command: {}", message.getText());
@@ -79,7 +89,10 @@ public class MoneyTrackerBot extends TelegramLongPollingBot {
             log.info("Add new expense");
 
             expenseRepository.insert(expense);
-            execute(responseMessage(message, expense));
+
+            SendMessage sendMessage = baseSendMessage(message, ResponseFormatter.onSucceedExpensePayload(expense));
+            sendMessage.setReplyMarkup(KeyboardUtil.categoryPad());
+            execute(sendMessage);
         }
 
     }
@@ -88,77 +101,69 @@ public class MoneyTrackerBot extends TelegramLongPollingBot {
         Message message = callbackQuery.getMessage();
 
         if (CallbackData.DELETE.equals(callbackQuery.getData())) {
-            execute(responseConfirmDeleteCallback(message));
+            EditMessageText editMessage = baseEditMessage(message);
+            editMessage.setReplyMarkup(KeyboardUtil.confirmDeletePad());
+            execute(editMessage);
         } else if (CallbackData.CONFIRM_DELETE.equals(callbackQuery.getData())) {
-            Integer id = CommonUtil.getId(message.getText());
+            Integer id = Optional
+                    .ofNullable(CommonUtil.getId(message.getText()))
+                    .orElseThrow(() -> new TelegramApiException("Invalid Message"));
+
             log.info("Deleting message with messageId {} and id {}", message.getMessageId(), id);
 
-            if (id == null)
-                throw new TelegramApiException("Invalid Message");
-
             expenseRepository.delete(id);
-            execute(responseDeleteCallback(callbackQuery.getMessage()));
+
+            EditMessageText editMessage = baseEditMessage(message, "Deleted from database");
+            execute(editMessage);
 
         } else if (CallbackData.CANCEL_DELETE.equals(callbackQuery.getData())) {
-            execute(responseCancelDeleteCallback(callbackQuery.getMessage()));
+            EditMessageText editMessage = baseEditMessage(message);
+            editMessage.setReplyMarkup(KeyboardUtil.defaultPad());
+            execute(editMessage);
+        } else if (CallbackData.EDIT_CATEGORY.equals(callbackQuery.getData())) {
+            EditMessageText editMessage = baseEditMessage(message);
+            editMessage.setReplyMarkup(KeyboardUtil.categoryPad());
+            execute(editMessage);
+        } else {
+            Category category = Category.valueOf(callbackQuery.getData());
+            Integer id = Optional
+                    .ofNullable(CommonUtil.getId(message.getText()))
+                    .orElseThrow(() -> new TelegramApiException("Invalid Message"));
+
+            log.info("Set Category to {} for message with id {}", category, id);
+
+            Expense expense = Optional
+                    .ofNullable(expenseRepository.getById(id))
+                    .orElseThrow(() -> new TelegramApiException("Invalid Message"));
+
+            expense.setCategory(category.name());
+            expenseRepository.update(expense);
+
+            EditMessageText editMessage = baseEditMessage(message, ResponseFormatter.onSucceedExpensePayload(expense));
+            editMessage.setReplyMarkup(KeyboardUtil.defaultPad());
+            execute(editMessage);
         }
     }
 
-    private SendMessage responseMessage(Message message, Expense expense) {
-        log.info("Sending validation success message");
-
-        return SendMessage.builder()
-                .chatId(message.getChatId().toString())
-                .text(ResponseFormatter.onSucceedExpensePayload(expense))
-                .replyMarkup(KeyboardUtil.deletePad())
-                .replyToMessageId(message.getMessageId())
-                .parseMode(ParseMode.MARKDOWN)
-                .build();
-    }
-
-    private SendMessage responseUpdateMessage(Message message) {
+    private SendMessage baseSendMessage(Message message, String text) {
         return SendMessage.builder()
                 .chatId(message.getChatId().toString())
                 .replyToMessageId(message.getMessageId())
-                .text("Success, update in database")
-                .build();
-    }
-
-    private EditMessageText responseRefreshMessage(Message message, Expense expense) {
-        return EditMessageText.builder()
-                .chatId(message.getChatId().toString())
-                .messageId(message.getReplyToMessage().getMessageId())
-                .text(ResponseFormatter.onSucceedExpensePayload(expense))
-                .replyMarkup(KeyboardUtil.deletePad())
+                .text(text)
                 .parseMode(ParseMode.MARKDOWN)
                 .build();
     }
 
-    private EditMessageText responseConfirmDeleteCallback(Message message) {
-        return EditMessageText.builder()
-                .chatId(message.getChatId().toString())
-                .messageId(message.getMessageId())
-                .replyMarkup(KeyboardUtil.confirmDeletePad())
-                .text(message.getText())
-                .parseMode(ParseMode.MARKDOWN)
-                .build();
+    private EditMessageText baseEditMessage(Message message) {
+        return baseEditMessage(message, message.getText());
     }
 
-    private EditMessageText responseCancelDeleteCallback(Message message) {
+    private EditMessageText baseEditMessage(Message message, String text) {
         return EditMessageText.builder()
                 .chatId(message.getChatId().toString())
                 .messageId(message.getMessageId())
-                .replyMarkup(KeyboardUtil.deletePad())
-                .text(message.getText())
+                .text(text)
                 .parseMode(ParseMode.MARKDOWN)
-                .build();
-    }
-
-    private EditMessageText responseDeleteCallback(Message message) {
-        return EditMessageText.builder()
-                .chatId(message.getChatId().toString())
-                .messageId(message.getMessageId())
-                .text("Deleted from database")
                 .build();
     }
 }
