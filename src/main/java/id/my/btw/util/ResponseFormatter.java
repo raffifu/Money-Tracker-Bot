@@ -17,7 +17,7 @@ public class ResponseFormatter {
         sb.append("*EXPENSE DETAIL*\n")
                 .append(":moneybag: : ").append(amountFormatted).append("\n")
                 .append(":performing_arts: : ").append(expense.getName()).append("\n")
-                .append(":round_pushpin: : ").append(expense.getDescription()).append("\n")
+                .append(":round_pushpin: : ").append(expense.getCategory()).append("\n")
                 .append(":date: : ").append(expense.getDate().format(DateTimeFormatter.ofPattern("d LLL yyyy"))).append("\n")
                 .append("\n_Reply to edit (").append(expense.getId()).append(")_");
 

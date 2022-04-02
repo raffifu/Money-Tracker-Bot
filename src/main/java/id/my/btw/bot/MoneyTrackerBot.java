@@ -3,12 +3,10 @@ package id.my.btw.bot;
 import id.my.btw.CallbackData;
 import id.my.btw.entity.Expense;
 import id.my.btw.repository.ExpenseRepository;
+import id.my.btw.util.CommonUtil;
 import id.my.btw.util.KeyboardUtil;
-import id.my.btw.util.MessageUtil;
 import id.my.btw.util.ResponseFormatter;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -17,9 +15,6 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
 
 @Slf4j
 public class MoneyTrackerBot extends TelegramLongPollingBot {
@@ -63,40 +58,30 @@ public class MoneyTrackerBot extends TelegramLongPollingBot {
         if (!message.isUserMessage())
             return;
 
-        if (!message.isCommand()) {
-            MutableList<String> msgListMutable = Lists.mutable.of(message.getText().split("\n"));
+        if (message.isReply()) {
+            log.info("Edit existing expense");
 
-            if (msgListMutable.size() != 3) {
-                log.error("Invalid input");
-                return;
-            }
+            Integer id = CommonUtil.getId(message.getReplyToMessage().getText());
+            if (id == null)
+                throw new TelegramApiException("Invalid Message");
 
-            Expense expense = Expense.builder()
-                    .amount(Integer.parseInt(msgListMutable.get(0)))
-                    .name(msgListMutable.get(1))
-                    .description(msgListMutable.get(2))
-                    .date(LocalDate.now(ZoneId.of("Asia/Jakarta")))
-                    .build();
+            Expense expense = CommonUtil.getExpense(message);
+            expense.setId(id);
+            expenseRepository.update(expense);
 
-            if (message.isReply()) {
-                log.info("Edit existing expense");
+            execute(responseRefreshMessage(message, expense));
+            execute(responseUpdateMessage(message));
+        } else if (message.isCommand()) {
+            // TODO: Handle command
+            log.info("Received command: {}", message.getText());
+        } else {
+            Expense expense = CommonUtil.getExpense(message);
+            log.info("Add new expense");
 
-                Integer id = MessageUtil.getId(message.getReplyToMessage().getText());
-                if (id == null)
-                    throw new TelegramApiException("Invalid Message");
-
-                expense.setId(id);
-                expenseRepository.update(expense);
-
-                execute(responseRefreshMessage(message, expense));
-                execute(responseUpdateMessage(message));
-            } else {
-                log.info("Add new expense");
-
-                expenseRepository.insert(expense);
-                execute(responseMessage(message, expense));
-            }
+            expenseRepository.insert(expense);
+            execute(responseMessage(message, expense));
         }
+
     }
 
     private void handleIncomingCallback(CallbackQuery callbackQuery) throws TelegramApiException {
@@ -105,7 +90,7 @@ public class MoneyTrackerBot extends TelegramLongPollingBot {
         if (CallbackData.DELETE.equals(callbackQuery.getData())) {
             execute(responseConfirmDeleteCallback(message));
         } else if (CallbackData.CONFIRM_DELETE.equals(callbackQuery.getData())) {
-            Integer id = MessageUtil.getId(message.getText());
+            Integer id = CommonUtil.getId(message.getText());
             log.info("Deleting message with messageId {} and id {}", message.getMessageId(), id);
 
             if (id == null)
