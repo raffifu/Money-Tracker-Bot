@@ -12,11 +12,11 @@ import java.time.LocalDate;
 public class Expense {
     private Integer id;
 
-    private String name;
-
     private Integer amount;
 
-    private String description;
+    private String note;
+
+    private String category;
 
     private LocalDate date;
 }
