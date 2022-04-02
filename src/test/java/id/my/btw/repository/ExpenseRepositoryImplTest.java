@@ -16,9 +16,9 @@ class ExpenseRepositoryImplTest {
     @Test
     void testInsert() {
         Expense expense = Expense.builder()
-                .name(easyRandom.nextObject(String.class))
+                .note(easyRandom.nextObject(String.class))
                 .amount(easyRandom.nextObject(Integer.class))
-                .description(easyRandom.nextObject(String.class))
+                .category(easyRandom.nextObject(String.class))
                 .date(easyRandom.nextObject(LocalDate.class))
                 .build();
 

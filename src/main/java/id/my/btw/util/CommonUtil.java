@@ -38,7 +38,7 @@ public class CommonUtil {
 
         return Expense.builder()
                 .amount(Integer.parseInt(msgListMutable.get(0)))
-                .name(msgListMutable.get(1))
+                .note(msgListMutable.get(1))
                 .date(LocalDate.now(ZoneId.of("Asia/Jakarta")))
                 .build();
     }
