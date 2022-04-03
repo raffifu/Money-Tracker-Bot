@@ -1,8 +1,8 @@
 package id.my.btw.util;
 
 import com.vdurmont.emoji.EmojiManager;
-import id.my.btw.CallbackData;
 import id.my.btw.entity.Category;
+import id.my.btw.service.CallbackService;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -15,12 +15,12 @@ public class KeyboardUtil {
     public static InlineKeyboardMarkup defaultPad() {
         InlineKeyboardButton deleteButton = InlineKeyboardButton.builder()
                 .text(EmojiManager.getForAlias("basket").getUnicode() + " Delete")
-                .callbackData(CallbackData.DELETE)
+                .callbackData(CallbackService.DELETE)
                 .build();
 
         InlineKeyboardButton editCategoryButton = InlineKeyboardButton.builder()
                 .text(EmojiManager.getForAlias("pencil").getUnicode() + " Edit Category")
-                .callbackData(CallbackData.EDIT_CATEGORY)
+                .callbackData(CallbackService.EDIT_CATEGORY)
                 .build();
 
         MutableList<InlineKeyboardButton> deleteRow = Lists.mutable.of(deleteButton);
@@ -34,12 +34,12 @@ public class KeyboardUtil {
     public static InlineKeyboardMarkup confirmDeletePad() {
         InlineKeyboardButton yesButton = InlineKeyboardButton.builder()
                 .text(EmojiManager.getForAlias("white_check_mark").getUnicode() + " Yes")
-                .callbackData(CallbackData.CONFIRM_DELETE)
+                .callbackData(CallbackService.CONFIRM_DELETE)
                 .build();
 
         InlineKeyboardButton cancelButton = InlineKeyboardButton.builder()
                 .text(EmojiManager.getForAlias("x").getUnicode() + " Cancel")
-                .callbackData(CallbackData.CANCEL_DELETE)
+                .callbackData(CallbackService.CANCEL_DELETE)
                 .build();
 
         MutableList<InlineKeyboardButton> keyboardButtons = Lists.mutable.of(yesButton, cancelButton);

@@ -1,6 +1,6 @@
 package id.my.btw.util;
 
-import id.my.btw.CommandMessage;
+import id.my.btw.entity.CommandMessage;
 import id.my.btw.entity.Expense;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.collections.api.factory.Lists;
