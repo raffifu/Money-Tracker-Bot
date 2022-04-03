@@ -3,6 +3,8 @@ package id.my.btw;
 import id.my.btw.bot.MoneyTrackerBot;
 import id.my.btw.repository.ExpenseRepository;
 import id.my.btw.repository.ExpenseRepositoryImpl;
+import id.my.btw.service.CallbackService;
+import id.my.btw.service.MessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -23,7 +25,10 @@ public class Application {
 
     private static void registerBot(TelegramBotsApi botsApi) throws TelegramApiException {
         ExpenseRepository expenseRepository = new ExpenseRepositoryImpl();
-        MoneyTrackerBot moneyTrackerBot = new MoneyTrackerBot(expenseRepository);
+
+        MessageService messageService = new MessageService(expenseRepository);
+        CallbackService callbackService = new CallbackService(expenseRepository);
+        MoneyTrackerBot moneyTrackerBot = new MoneyTrackerBot(messageService, callbackService);
 
         botsApi.registerBot(moneyTrackerBot);
     }

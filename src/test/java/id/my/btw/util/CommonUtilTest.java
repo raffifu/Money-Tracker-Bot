@@ -1,6 +1,6 @@
 package id.my.btw.util;
 
-import id.my.btw.CommandMessage;
+import id.my.btw.entity.CommandMessage;
 import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.Test;
 import org.telegram.telegrambots.meta.api.objects.Message;
