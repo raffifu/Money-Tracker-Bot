@@ -24,8 +24,8 @@ public class ResponseUtil {
         sb.append("*EXPENSE DETAIL*\n")
                 .append(":moneybag: : ").append(amountFormatted).append("\n")
                 .append(":performing_arts: : ").append(expense.getNote()).append("\n")
-                .append(":round_pushpin: : ").append(category).append("\n")
-                .append(":date: : ").append(expense.getDate().format(DateTimeFormatter.ofPattern("d LLL yyyy"))).append("\n")
+                .append(":card_index_dividers: : ").append(category).append("\n")
+                .append(":date: : ").append(expense.getDate().format(DateTimeFormatter.ofPattern("E, d LLL yyyy"))).append("\n")
                 .append("\n_Reply to edit (").append(expense.getId()).append(")_");
 
         return EmojiParser.parseToUnicode(sb.toString());

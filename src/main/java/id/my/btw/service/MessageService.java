@@ -29,15 +29,15 @@ public class MessageService {
             return;
 
         if (message.isReply()) {
-            log.info("Received reply, editing expense");
+            log.info("[REPLY] - Edit message");
 
             responseHandler.accept(onReply(message));
             responseHandler.accept(onReplyConfirmation(message));
         } else if (message.isCommand()) {
             // TODO: Handle command
-            log.info("Received command");
+            log.info("[COMMAND]");
         } else {
-            log.info("Received general message, add new expense");
+            log.info("[GENERAL MESSAGE] - Add new expense");
 
             responseHandler.accept(onNewExpense(message));
         }

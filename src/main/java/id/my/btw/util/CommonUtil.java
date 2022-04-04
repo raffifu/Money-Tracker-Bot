@@ -16,14 +16,17 @@ import java.util.regex.Pattern;
 public class CommonUtil {
 
     public static Integer getId(String message) {
-        log.info("Attempting to get id from message");
         Pattern pattern = Pattern.compile("\\(\\d*\\)$");
         Matcher matcher = pattern.matcher(message);
 
         if (matcher.find()) {
+            log.info("Found id");
+            
             String found = matcher.group();
             return Integer.parseInt(found.substring(1, found.length() - 1));
         }
+
+        log.error("Id not found from message: {}", message);
 
         return null;
     }
