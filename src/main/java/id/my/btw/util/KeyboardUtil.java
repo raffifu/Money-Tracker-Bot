@@ -9,6 +9,9 @@ import org.eclipse.collections.api.list.MutableList;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @Slf4j
 public class KeyboardUtil {
 
@@ -19,12 +22,17 @@ public class KeyboardUtil {
                 .build();
 
         InlineKeyboardButton editCategoryButton = InlineKeyboardButton.builder()
-                .text(EmojiManager.getForAlias("pencil").getUnicode() + " Edit Category")
+                .text(EmojiManager.getForAlias("pencil").getUnicode() + " Category")
                 .callbackData(CallbackService.EDIT_CATEGORY)
                 .build();
 
+        InlineKeyboardButton editDateButton = InlineKeyboardButton.builder()
+                .text(EmojiManager.getForAlias("date").getUnicode() + " Date")
+                .callbackData(CallbackService.EDIT_DATE)
+                .build();
+
         MutableList<InlineKeyboardButton> deleteRow = Lists.mutable.of(deleteButton);
-        MutableList<InlineKeyboardButton> editCategoryRow = Lists.mutable.of(editCategoryButton);
+        MutableList<InlineKeyboardButton> editCategoryRow = Lists.mutable.of(editCategoryButton, editDateButton);
 
         return InlineKeyboardMarkup.builder()
                 .keyboard(Lists.mutable.of(deleteRow, editCategoryRow))
@@ -39,7 +47,7 @@ public class KeyboardUtil {
 
         InlineKeyboardButton cancelButton = InlineKeyboardButton.builder()
                 .text(EmojiManager.getForAlias("x").getUnicode() + " Cancel")
-                .callbackData(CallbackService.CANCEL_DELETE)
+                .callbackData(CallbackService.CANCEL)
                 .build();
 
         MutableList<InlineKeyboardButton> keyboardButtons = Lists.mutable.of(yesButton, cancelButton);
@@ -72,4 +80,30 @@ public class KeyboardUtil {
                 .build();
     }
 
+    public static InlineKeyboardMarkup datePad(LocalDate date) {
+        MutableList<InlineKeyboardButton> keyboardRow = Lists.mutable.empty();
+
+        for (int i = -1; i < 2; i += 2) {
+            LocalDate option = date.plusDays(i);
+
+            if (option.isAfter(LocalDate.now()))
+                continue;
+
+            InlineKeyboardButton button = InlineKeyboardButton.builder()
+                    .text(option.format(DateTimeFormatter.ofPattern("d LLL yyyy")))
+                    .callbackData(option.toString())
+                    .build();
+
+            keyboardRow.add(button);
+        }
+
+        InlineKeyboardButton cancelButton = InlineKeyboardButton.builder()
+                .text(EmojiManager.getForAlias("x").getUnicode() + " Cancel")
+                .callbackData(CallbackService.CANCEL)
+                .build();
+
+        return InlineKeyboardMarkup.builder()
+                .keyboard(Lists.mutable.of(keyboardRow, Lists.mutable.of(cancelButton)))
+                .build();
+    }
 }
