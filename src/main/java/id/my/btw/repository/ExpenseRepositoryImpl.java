@@ -11,12 +11,13 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
     @Override
     public void insert(Expense expense) {
         try (Connection connection = ConnectionUtil.getDataSource().getConnection()) {
-            String sql = "INSERT INTO expense (note, amount, category, date) VALUES (?, ?, ?, ?)";
+            String sql = "INSERT INTO expense (note, amount, category, account, date) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 statement.setString(1, expense.getNote());
                 statement.setInt(2, expense.getAmount());
                 statement.setString(3, expense.getCategory());
-                statement.setObject(4, expense.getDate());
+                statement.setObject(4, expense.getAccount());
+                statement.setObject(5, expense.getDate());
 
                 statement.executeUpdate();
 
@@ -51,14 +52,15 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
     @Override
     public void update(Expense expense) {
         try (Connection connection = ConnectionUtil.getDataSource().getConnection()) {
-            String sql = "UPDATE expense SET note = ?, amount = ?, category = ?, date = ? WHERE id = ?";
+            String sql = "UPDATE expense SET note = ?, amount = ?, category = ?, account = ?, date = ? WHERE id = ?";
 
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, expense.getNote());
                 statement.setInt(2, expense.getAmount());
                 statement.setString(3, expense.getCategory());
-                statement.setObject(4, expense.getDate());
-                statement.setLong(5, expense.getId());
+                statement.setObject(4, expense.getAccount());
+                statement.setObject(5, expense.getDate());
+                statement.setLong(6, expense.getId());
 
                 statement.executeUpdate();
             }
@@ -83,6 +85,7 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
                             .amount(resultSet.getInt("amount"))
                             .note(resultSet.getString("note"))
                             .category(resultSet.getString("category"))
+                            .account(resultSet.getString("account"))
                             .date(resultSet.getDate("date").toLocalDate())
                             .build();
                 }

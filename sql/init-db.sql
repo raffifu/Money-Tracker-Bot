@@ -4,6 +4,7 @@ CREATE TABLE expense
     amount     int(8)      NOT NULL,
     note       varchar(50) NOT NULL,
     category   varchar(50),
+    account    varchar(50),
     date       date        NOT NULL,
     created_at datetime DEFAULT current_timestamp(),
     updated_at datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
