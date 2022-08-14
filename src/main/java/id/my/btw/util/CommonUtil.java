@@ -1,5 +1,6 @@
 package id.my.btw.util;
 
+import id.my.btw.entity.Account;
 import id.my.btw.entity.CommandMessage;
 import id.my.btw.entity.Expense;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ public class CommonUtil {
 
         if (matcher.find()) {
             log.info("Found id");
-            
+
             String found = matcher.group();
             return Integer.parseInt(found.substring(1, found.length() - 1));
         }
@@ -43,6 +44,7 @@ public class CommonUtil {
                 .amount(Integer.parseInt(msgListMutable.get(0)))
                 .note(msgListMutable.get(1))
                 .date(LocalDate.now(ZoneId.of("Asia/Jakarta")))
+                .account(Account.CASH.name())
                 .build();
     }
 

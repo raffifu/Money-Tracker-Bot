@@ -1,11 +1,13 @@
 package id.my.btw.util;
 
 import com.vdurmont.emoji.EmojiManager;
+import id.my.btw.entity.Account;
 import id.my.btw.entity.Category;
 import id.my.btw.service.CallbackService;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.tuple.Pair;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
@@ -21,21 +23,63 @@ public class KeyboardUtil {
                 .callbackData(CallbackService.DELETE)
                 .build();
 
-        InlineKeyboardButton editCategoryButton = InlineKeyboardButton.builder()
-                .text(EmojiManager.getForAlias("pencil").getUnicode() + " Category")
-                .callbackData(CallbackService.EDIT_CATEGORY)
-                .build();
-
-        InlineKeyboardButton editDateButton = InlineKeyboardButton.builder()
-                .text(EmojiManager.getForAlias("date").getUnicode() + " Date")
-                .callbackData(CallbackService.EDIT_DATE)
+        InlineKeyboardButton editButton = InlineKeyboardButton.builder()
+                .text(EmojiManager.getForAlias("pencil").getUnicode() + " Edit")
+                .callbackData(CallbackService.EDIT)
                 .build();
 
         MutableList<InlineKeyboardButton> deleteRow = Lists.mutable.of(deleteButton);
-        MutableList<InlineKeyboardButton> editCategoryRow = Lists.mutable.of(editCategoryButton, editDateButton);
+        MutableList<InlineKeyboardButton> editRow = Lists.mutable.of(editButton);
 
         return InlineKeyboardMarkup.builder()
-                .keyboard(Lists.mutable.of(deleteRow, editCategoryRow))
+                .keyboard(Lists.mutable.of(deleteRow, editRow))
+                .build();
+    }
+
+    public static InlineKeyboardMarkup editPad() {
+
+        MutableList<String> textButtons = Lists.mutable.of(
+                EmojiManager.getForAlias("pencil").getUnicode() + " Category",
+                EmojiManager.getForAlias("atm").getUnicode() + " Account",
+                EmojiManager.getForAlias("date").getUnicode() + " Date"
+        );
+
+        MutableList<String> callbackButtons = Lists.mutable.of(
+                CallbackService.EDIT_CATEGORY,
+                CallbackService.EDIT_ACCOUNT,
+                CallbackService.EDIT_DATE
+        );
+
+        MutableList<Pair<String, String>> buttonData = textButtons.zip(callbackButtons);
+
+        MutableList<MutableList<InlineKeyboardButton>> keyboard = Lists.mutable.empty();
+        MutableList<InlineKeyboardButton> row = Lists.mutable.empty();
+        for (var data : buttonData) {
+            InlineKeyboardButton button = InlineKeyboardButton.builder()
+                    .text(data.getOne())
+                    .callbackData(data.getTwo())
+                    .build();
+
+            row.add(button);
+
+            if (row.size() == 2) {
+                keyboard.add(row.clone());
+                row.clear();
+            }
+        }
+
+        if (row.size() != 0)
+            keyboard.add(row);
+
+        InlineKeyboardButton cancelButton = InlineKeyboardButton.builder()
+                .text(EmojiManager.getForAlias("x").getUnicode() + " Cancel")
+                .callbackData(CallbackService.CANCEL)
+                .build();
+
+        keyboard.add(Lists.mutable.of(cancelButton));
+
+        return InlineKeyboardMarkup.builder()
+                .keyboard(keyboard)
                 .build();
     }
 
@@ -73,6 +117,26 @@ public class KeyboardUtil {
                 keyboard.add(keyboardRow.clone());
                 keyboardRow.clear();
             }
+        }
+
+        return InlineKeyboardMarkup.builder()
+                .keyboard(keyboard)
+                .build();
+    }
+
+    public static InlineKeyboardMarkup accountPad() {
+        MutableList<InlineKeyboardButton> keyboardRow = Lists.mutable.empty();
+        MutableList<MutableList<InlineKeyboardButton>> keyboard = Lists.mutable.empty();
+
+        for (Account account : Account.values()) {
+            InlineKeyboardButton button = InlineKeyboardButton.builder()
+                    .text(account.toString())
+                    .callbackData(account.name())
+                    .build();
+
+            keyboardRow.add(button);
+            keyboard.add(keyboardRow.clone());
+            keyboardRow.clear();
         }
 
         return InlineKeyboardMarkup.builder()

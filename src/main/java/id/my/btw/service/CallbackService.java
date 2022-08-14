@@ -1,5 +1,6 @@
 package id.my.btw.service;
 
+import id.my.btw.entity.Account;
 import id.my.btw.entity.Category;
 import id.my.btw.entity.Expense;
 import id.my.btw.repository.ExpenseRepository;
@@ -26,7 +27,8 @@ public class CallbackService {
     public static final String CANCEL = "CANCEL";
     public static final String EDIT_CATEGORY = "EDIT_CATEGORY";
     public static final String EDIT_DATE = "EDIT_DATE";
-
+    public static final String EDIT_ACCOUNT = "EDIT_ACCOUNT";
+    public static final String EDIT = "EDIT";
     private final ExpenseRepository expenseRepository;
 
     public CallbackService(ExpenseRepository expenseRepository) {
@@ -48,15 +50,38 @@ public class CallbackService {
             case CANCEL:
                 responseHandler.accept(onCancel(message));
                 break;
+            case EDIT:
+                responseHandler.accept(onEdit(message));
+                break;
             case EDIT_CATEGORY:
                 responseHandler.accept(onEditCategory(message));
                 break;
             case EDIT_DATE:
                 responseHandler.accept(onEditDate(message));
                 break;
+            case EDIT_ACCOUNT:
+                responseHandler.accept(onEditAccount(message));
+                break;
             default:
                 responseHandler.accept(onGeneralCallback(message, callbackQuery.getData()));
         }
+    }
+
+    private EditMessageText onEditAccount(Message message) {
+        log.info("Show account pad");
+
+        EditMessageText editMessage = ResponseUtil.genEditMessage(message);
+        editMessage.setReplyMarkup(KeyboardUtil.accountPad());
+        return editMessage;
+    }
+
+    private EditMessageText onEdit(Message message) {
+        log.info("Show edit pad");
+
+        EditMessageText editMessage = ResponseUtil.genEditMessage(message);
+        editMessage.setReplyMarkup(KeyboardUtil.editPad());
+        return editMessage;
+
     }
 
     private EditMessageText onDelete(Message message) {
@@ -120,6 +145,8 @@ public class CallbackService {
             editMessage = onInputCategory(message, callbackData);
         } else if (isDate(callbackData)) {
             editMessage = onInputDate(message, callbackData);
+        } else if (isInAccount(callbackData)) {
+            editMessage = onInputAccount(message, callbackData);
         }
 
         return Optional
@@ -172,6 +199,27 @@ public class CallbackService {
         return editMessage;
     }
 
+    private EditMessageText onInputAccount(Message message, String callbackData) throws TelegramApiException {
+        log.info("Input account: {}", callbackData);
+
+        Account account = Account.valueOf(callbackData);
+
+        Integer id = Optional
+                .ofNullable(CommonUtil.getId(message.getText()))
+                .orElseThrow(() -> new TelegramApiException("Invalid Message"));
+
+        Expense expense = Optional
+                .ofNullable(expenseRepository.getById(id))
+                .orElseThrow(() -> new TelegramApiException("Invalid Message"));
+
+        expense.setAccount(account.name());
+        expenseRepository.update(expense);
+
+        EditMessageText editMessage = ResponseUtil.genEditMessage(message, ResponseUtil.genResultMessage(expense));
+        editMessage.setReplyMarkup(KeyboardUtil.defaultPad());
+        return editMessage;
+    }
+
     private Boolean isDate(String date) {
         try {
             LocalDate.parse(date);
@@ -184,6 +232,15 @@ public class CallbackService {
     private Boolean isInCategory(String data) {
         for (Category category : Category.values()) {
             if (category.name().equals(data)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Boolean isInAccount(String data) {
+        for (Account account : Account.values()) {
+            if (account.name().equals(data)) {
                 return true;
             }
         }

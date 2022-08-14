@@ -19,12 +19,14 @@ public class ResponseUtil {
                 .format(expense.getAmount());
 
         String category = Optional.ofNullable(expense.getCategory()).orElse("-");
+        String account = Optional.ofNullable(expense.getAccount()).orElse("-");
 
         StringBuilder sb = new StringBuilder();
         sb.append("*EXPENSE DETAIL*\n")
                 .append(":moneybag: : ").append(amountFormatted).append("\n")
                 .append(":performing_arts: : ").append(expense.getNote()).append("\n")
                 .append(":card_index_dividers: : ").append(category).append("\n")
+                .append(":globe_with_meridians: : ").append(account).append(("\n"))
                 .append(":date: : ").append(expense.getDate().format(DateTimeFormatter.ofPattern("E, d LLL yyyy"))).append("\n")
                 .append("\n_Reply to edit (").append(expense.getId()).append(")_");
 
