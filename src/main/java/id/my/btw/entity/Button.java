@@ -3,14 +3,18 @@ package id.my.btw.entity;
 import com.vdurmont.emoji.EmojiManager;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-public enum Account {
-    BANK("bank"),
-    CASH("moneybag"),
-    EMONEY("iphone");
+public enum Button {
+    DELETE("basket"),
+    YES("white_check_mark"),
+    CANCEL("x"),
+    CATEGORY("pencil"),
+    DATE("date"),
+    ACCOUNT("atm"),
+    EDIT("pencil");
 
     private String emoji;
 
-    Account(String emoji) {
+    Button(String emoji) {
         this.emoji = emoji;
     }
 
@@ -30,4 +34,5 @@ public enum Account {
                 .callbackData(name())
                 .build();
     }
+
 }

@@ -1,13 +1,11 @@
 package id.my.btw.util;
 
-import com.vdurmont.emoji.EmojiManager;
 import id.my.btw.entity.Account;
+import id.my.btw.entity.Button;
 import id.my.btw.entity.Category;
-import id.my.btw.service.CallbackService;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.tuple.Pair;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
@@ -18,18 +16,8 @@ import java.time.format.DateTimeFormatter;
 public class KeyboardUtil {
 
     public static InlineKeyboardMarkup defaultPad() {
-        InlineKeyboardButton deleteButton = InlineKeyboardButton.builder()
-                .text(EmojiManager.getForAlias("basket").getUnicode() + " Delete")
-                .callbackData(CallbackService.DELETE)
-                .build();
-
-        InlineKeyboardButton editButton = InlineKeyboardButton.builder()
-                .text(EmojiManager.getForAlias("pencil").getUnicode() + " Edit")
-                .callbackData(CallbackService.EDIT)
-                .build();
-
-        MutableList<InlineKeyboardButton> deleteRow = Lists.mutable.of(deleteButton);
-        MutableList<InlineKeyboardButton> editRow = Lists.mutable.of(editButton);
+        MutableList<InlineKeyboardButton> deleteRow = Lists.mutable.of(Button.DELETE.toInlineKeyboardButton());
+        MutableList<InlineKeyboardButton> editRow = Lists.mutable.of(Button.EDIT.toInlineKeyboardButton());
 
         return InlineKeyboardMarkup.builder()
                 .keyboard(Lists.mutable.of(deleteRow, editRow))
@@ -37,30 +25,16 @@ public class KeyboardUtil {
     }
 
     public static InlineKeyboardMarkup editPad() {
-
-        MutableList<String> textButtons = Lists.mutable.of(
-                EmojiManager.getForAlias("pencil").getUnicode() + " Category",
-                EmojiManager.getForAlias("atm").getUnicode() + " Account",
-                EmojiManager.getForAlias("date").getUnicode() + " Date"
+        MutableList<Button> editButtonData = Lists.mutable.of(
+                Button.CATEGORY,
+                Button.ACCOUNT,
+                Button.DATE
         );
-
-        MutableList<String> callbackButtons = Lists.mutable.of(
-                CallbackService.EDIT_CATEGORY,
-                CallbackService.EDIT_ACCOUNT,
-                CallbackService.EDIT_DATE
-        );
-
-        MutableList<Pair<String, String>> buttonData = textButtons.zip(callbackButtons);
 
         MutableList<MutableList<InlineKeyboardButton>> keyboard = Lists.mutable.empty();
         MutableList<InlineKeyboardButton> row = Lists.mutable.empty();
-        for (var data : buttonData) {
-            InlineKeyboardButton button = InlineKeyboardButton.builder()
-                    .text(data.getOne())
-                    .callbackData(data.getTwo())
-                    .build();
-
-            row.add(button);
+        for (Button button : editButtonData) {
+            row.add(button.toInlineKeyboardButton());
 
             if (row.size() == 2) {
                 keyboard.add(row.clone());
@@ -71,12 +45,7 @@ public class KeyboardUtil {
         if (row.size() != 0)
             keyboard.add(row);
 
-        InlineKeyboardButton cancelButton = InlineKeyboardButton.builder()
-                .text(EmojiManager.getForAlias("x").getUnicode() + " Cancel")
-                .callbackData(CallbackService.CANCEL)
-                .build();
-
-        keyboard.add(Lists.mutable.of(cancelButton));
+        keyboard.add(Lists.mutable.of(Button.CANCEL.toInlineKeyboardButton()));
 
         return InlineKeyboardMarkup.builder()
                 .keyboard(keyboard)
@@ -84,17 +53,10 @@ public class KeyboardUtil {
     }
 
     public static InlineKeyboardMarkup confirmDeletePad() {
-        InlineKeyboardButton yesButton = InlineKeyboardButton.builder()
-                .text(EmojiManager.getForAlias("white_check_mark").getUnicode() + " Yes")
-                .callbackData(CallbackService.CONFIRM_DELETE)
-                .build();
-
-        InlineKeyboardButton cancelButton = InlineKeyboardButton.builder()
-                .text(EmojiManager.getForAlias("x").getUnicode() + " Cancel")
-                .callbackData(CallbackService.CANCEL)
-                .build();
-
-        MutableList<InlineKeyboardButton> keyboardButtons = Lists.mutable.of(yesButton, cancelButton);
+        MutableList<InlineKeyboardButton> keyboardButtons = Lists.mutable.of(
+                Button.YES.toInlineKeyboardButton(),
+                Button.CANCEL.toInlineKeyboardButton()
+        );
 
         return InlineKeyboardMarkup.builder()
                 .keyboardRow(keyboardButtons)
@@ -106,12 +68,7 @@ public class KeyboardUtil {
         MutableList<MutableList<InlineKeyboardButton>> keyboard = Lists.mutable.empty();
 
         for (Category category : Category.values()) {
-            InlineKeyboardButton button = InlineKeyboardButton.builder()
-                    .text(category.toString())
-                    .callbackData(category.name())
-                    .build();
-
-            keyboardRow.add(button);
+            keyboardRow.add(category.toInlineKeyboardButton());
 
             if (keyboardRow.size() == 2) {
                 keyboard.add(keyboardRow.clone());
@@ -129,12 +86,7 @@ public class KeyboardUtil {
         MutableList<MutableList<InlineKeyboardButton>> keyboard = Lists.mutable.empty();
 
         for (Account account : Account.values()) {
-            InlineKeyboardButton button = InlineKeyboardButton.builder()
-                    .text(account.toString())
-                    .callbackData(account.name())
-                    .build();
-
-            keyboardRow.add(button);
+            keyboardRow.add(account.toInlineKeyboardButton());
             keyboard.add(keyboardRow.clone());
             keyboardRow.clear();
         }
@@ -161,13 +113,10 @@ public class KeyboardUtil {
             keyboardRow.add(button);
         }
 
-        InlineKeyboardButton cancelButton = InlineKeyboardButton.builder()
-                .text(EmojiManager.getForAlias("x").getUnicode() + " Cancel")
-                .callbackData(CallbackService.CANCEL)
-                .build();
-
         return InlineKeyboardMarkup.builder()
-                .keyboard(Lists.mutable.of(keyboardRow, Lists.mutable.of(cancelButton)))
-                .build();
+                .keyboard(
+                        Lists.mutable.of(keyboardRow,
+                                Lists.mutable.of(Button.CANCEL.toInlineKeyboardButton()))
+                ).build();
     }
 }

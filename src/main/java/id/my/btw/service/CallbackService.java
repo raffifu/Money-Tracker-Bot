@@ -1,6 +1,7 @@
 package id.my.btw.service;
 
 import id.my.btw.entity.Account;
+import id.my.btw.entity.Button;
 import id.my.btw.entity.Category;
 import id.my.btw.entity.Expense;
 import id.my.btw.repository.ExpenseRepository;
@@ -20,15 +21,9 @@ import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+
 @Slf4j
 public class CallbackService {
-    public static final String DELETE = "DELETE";
-    public static final String CONFIRM_DELETE = "CONFIRM_DELETE";
-    public static final String CANCEL = "CANCEL";
-    public static final String EDIT_CATEGORY = "EDIT_CATEGORY";
-    public static final String EDIT_DATE = "EDIT_DATE";
-    public static final String EDIT_ACCOUNT = "EDIT_ACCOUNT";
-    public static final String EDIT = "EDIT";
     private final ExpenseRepository expenseRepository;
 
     public CallbackService(ExpenseRepository expenseRepository) {
@@ -40,11 +35,20 @@ public class CallbackService {
 
         log.info("[{}] - Handling Callback", callbackQuery.getData());
 
-        switch (callbackQuery.getData()) {
+        String data = callbackQuery.getData();
+
+        if (!isInButton(data)) {
+            responseHandler.accept(onGeneralCallback(message, callbackQuery.getData()));
+            return;
+        }
+
+        Button buttonCalled = Button.valueOf(data);
+
+        switch (buttonCalled) {
             case DELETE:
                 responseHandler.accept(onDelete(message));
                 break;
-            case CONFIRM_DELETE:
+            case YES:
                 responseHandler.accept(onConfirmedDelete(message));
                 break;
             case CANCEL:
@@ -53,17 +57,15 @@ public class CallbackService {
             case EDIT:
                 responseHandler.accept(onEdit(message));
                 break;
-            case EDIT_CATEGORY:
+            case CATEGORY:
                 responseHandler.accept(onEditCategory(message));
                 break;
-            case EDIT_DATE:
+            case DATE:
                 responseHandler.accept(onEditDate(message));
                 break;
-            case EDIT_ACCOUNT:
+            case ACCOUNT:
                 responseHandler.accept(onEditAccount(message));
                 break;
-            default:
-                responseHandler.accept(onGeneralCallback(message, callbackQuery.getData()));
         }
     }
 
@@ -240,6 +242,15 @@ public class CallbackService {
 
     private Boolean isInAccount(String data) {
         for (Account account : Account.values()) {
+            if (account.name().equals(data)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Boolean isInButton(String data) {
+        for (Button account : Button.values()) {
             if (account.name().equals(data)) {
                 return true;
             }
