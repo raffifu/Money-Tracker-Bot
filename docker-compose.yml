@@ -11,10 +11,11 @@ services:
       BOT_USERNAME: ${BOT_USERNAME}
       CREATOR_ID: ${CREATOR_ID}
       JDBC_DATABASE_URL: jdbc:mysql://bot_db:3306/${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
   bot_db:
     image: mariadb:10-focal
     restart: always
-    container_name: ${DB_CONTAINER}
     volumes:
       - ./data/mariadb:/var/lib/mysql
       - ./sql:/docker-entrypoint-initdb.d
@@ -23,3 +24,5 @@ services:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - '3306:3306'
