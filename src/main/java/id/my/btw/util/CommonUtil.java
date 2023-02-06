@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -32,7 +33,7 @@ public class CommonUtil {
         return null;
     }
 
-    public static Expense getExpense(Message message) {
+    public static Expense getExpense(Message message) throws TelegramApiException {
         MutableList<String> msgListMutable = Lists.mutable.of(message.getText().split("\n"));
 
         if (msgListMutable.size() != 2) {
@@ -41,7 +42,7 @@ public class CommonUtil {
         }
 
         return Expense.builder()
-                .amount(Integer.parseInt(msgListMutable.get(0)))
+                .amount(parseAmount(msgListMutable.get(0)))
                 .note(msgListMutable.get(1))
                 .date(LocalDate.now(ZoneId.of("Asia/Jakarta")))
                 .account(Account.CASH.name())
@@ -62,6 +63,27 @@ public class CommonUtil {
         }
 
         return null;
+    }
+
+    public static Integer parseAmount(String text) throws TelegramApiException {
+        int multiplier = 1;
+
+        if (Pattern
+                .compile("[kK]$")
+                .matcher(text)
+                .find()
+        )
+            multiplier = 1000;
+
+        Pattern pattern = Pattern.compile("^[0-9]+");
+        Matcher matcher = pattern.matcher(text);
+
+        if (matcher.find()) {
+            String match = matcher.group();
+            return Integer.parseInt(match) * multiplier;
+        }
+
+        throw new TelegramApiException("Message broken");
     }
 
 }
