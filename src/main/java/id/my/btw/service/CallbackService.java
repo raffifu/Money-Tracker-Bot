@@ -17,7 +17,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -37,7 +36,7 @@ public class CallbackService {
 
         String data = callbackQuery.getData();
 
-        if (!isInButton(data)) {
+        if (!CommonUtil.isCommonButton(data)) {
             responseHandler.accept(onGeneralCallback(message, callbackQuery.getData()));
             return;
         }
@@ -123,6 +122,10 @@ public class CallbackService {
     }
 
     private EditMessageText onEditDate(Message message) throws TelegramApiException {
+        return onEditDate(message, 0);
+    }
+
+    private EditMessageText onEditDate(Message message, Integer deltaDay) throws TelegramApiException {
         log.info("Show date pad");
 
         Integer id = Optional
@@ -134,7 +137,7 @@ public class CallbackService {
                 .orElseThrow(() -> new TelegramApiException("Invalid Message"));
 
         EditMessageText editMessage = ResponseUtil.genEditMessage(message);
-        editMessage.setReplyMarkup(KeyboardUtil.datePad(expense.getDate()));
+        editMessage.setReplyMarkup(KeyboardUtil.datePad(expense.getDate(), deltaDay));
         return editMessage;
     }
 
@@ -143,12 +146,15 @@ public class CallbackService {
 
         EditMessageText editMessage = null;
 
-        if (isInCategory(callbackData)) {
+        if (CommonUtil.isCategoryButton(callbackData)) {
             editMessage = onInputCategory(message, callbackData);
-        } else if (isDate(callbackData)) {
+        } else if (CommonUtil.isDateButton(callbackData)) {
             editMessage = onInputDate(message, callbackData);
-        } else if (isInAccount(callbackData)) {
+        } else if (CommonUtil.isAccountButton(callbackData)) {
             editMessage = onInputAccount(message, callbackData);
+        } else if (CommonUtil.isDateHandlerButton(callbackData)) {
+            CommonUtil.parseDeltaDay(callbackData);
+            editMessage = onEditDate(message, CommonUtil.parseDeltaDay(callbackData));
         }
 
         return Optional
@@ -220,41 +226,5 @@ public class CallbackService {
         EditMessageText editMessage = ResponseUtil.genEditMessage(message, ResponseUtil.genResultMessage(expense));
         editMessage.setReplyMarkup(KeyboardUtil.defaultPad());
         return editMessage;
-    }
-
-    private Boolean isDate(String date) {
-        try {
-            LocalDate.parse(date);
-            return true;
-        } catch (DateTimeParseException e) {
-            return false;
-        }
-    }
-
-    private Boolean isInCategory(String data) {
-        for (Category category : Category.values()) {
-            if (category.name().equals(data)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private Boolean isInAccount(String data) {
-        for (Account account : Account.values()) {
-            if (account.name().equals(data)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private Boolean isInButton(String data) {
-        for (Button account : Button.values()) {
-            if (account.name().equals(data)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
