@@ -71,6 +71,8 @@ public class KeyboardUtil {
             }
         }
 
+        keyboard.add(Lists.mutable.of(Button.CANCEL.toInlineKeyboardButton()));
+
         return InlineKeyboardMarkup.builder()
                 .keyboard(keyboard)
                 .build();
@@ -93,27 +95,35 @@ public class KeyboardUtil {
                 .build();
     }
 
-    public static InlineKeyboardMarkup datePad(LocalDate date) {
+    public static InlineKeyboardMarkup datePad(LocalDate date, Integer deltaDay) {
         MutableList<InlineKeyboardButton> keyboardRow = Lists.mutable.empty();
+        MutableList<MutableList<InlineKeyboardButton>> keyboard = Lists.mutable.empty();
 
-        for (int i = -1; i < 2; i += 2) {
-            LocalDate option = date.plusDays(i);
+        LocalDate option = date.plusDays(deltaDay);
 
-            if (option.isAfter(LocalDate.now()))
-                continue;
+        keyboardRow.add(createKeyboard("<<", "MINUS_".concat(deltaDay.toString())));
 
-            InlineKeyboardButton button = InlineKeyboardButton.builder()
-                    .text(option.format(DateTimeFormatter.ofPattern("d LLL yyyy")))
-                    .callbackData(option.toString())
-                    .build();
+        if (!(option.isAfter(LocalDate.now()) || option.isEqual(LocalDate.now())))
+            keyboardRow.add(createKeyboard(">>", "PLUS_".concat(deltaDay.toString())));
 
-            keyboardRow.add(button);
-        }
+        keyboard.add(keyboardRow.clone());
+
+        keyboard.add(Lists.mutable.of(createKeyboard(
+                option.format(DateTimeFormatter.ofPattern("d LLL yyyy")),
+                option.toString()
+        )));
+
+        keyboard.add(Lists.mutable.of(Button.CANCEL.toInlineKeyboardButton()));
 
         return InlineKeyboardMarkup.builder()
-                .keyboard(
-                        Lists.mutable.of(keyboardRow,
-                                Lists.mutable.of(Button.CANCEL.toInlineKeyboardButton()))
-                ).build();
+                .keyboard(keyboard)
+                .build();
+    }
+
+    private static InlineKeyboardButton createKeyboard(String text, String callbackData) {
+        return InlineKeyboardButton.builder()
+                .text(text)
+                .callbackData(callbackData)
+                .build();
     }
 }
