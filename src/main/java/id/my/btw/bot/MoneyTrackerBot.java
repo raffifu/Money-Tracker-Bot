@@ -57,7 +57,7 @@ public class MoneyTrackerBot extends TelegramLongPollingBot {
                 callbackService.handleIncomingCallback(callbackQuery, responseHandler);
             }
         } catch (TelegramApiException e) {
-            log.error("Error handling incoming message", e);
+            log.error("Error handling incoming message: {}", e.getMessage());
         }
     }
 }

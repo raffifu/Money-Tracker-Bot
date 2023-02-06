@@ -16,12 +16,7 @@ import java.time.format.DateTimeFormatter;
 public class KeyboardUtil {
 
     public static InlineKeyboardMarkup defaultPad() {
-        MutableList<InlineKeyboardButton> deleteRow = Lists.mutable.of(Button.DELETE.toInlineKeyboardButton());
-        MutableList<InlineKeyboardButton> editRow = Lists.mutable.of(Button.EDIT.toInlineKeyboardButton());
-
-        return InlineKeyboardMarkup.builder()
-                .keyboard(Lists.mutable.of(deleteRow, editRow))
-                .build();
+        return editPad();
     }
 
     public static InlineKeyboardMarkup editPad() {
@@ -45,7 +40,7 @@ public class KeyboardUtil {
         if (row.size() != 0)
             keyboard.add(row);
 
-        keyboard.add(Lists.mutable.of(Button.CANCEL.toInlineKeyboardButton()));
+        keyboard.add(Lists.mutable.of(Button.DELETE.toInlineKeyboardButton()));
 
         return InlineKeyboardMarkup.builder()
                 .keyboard(keyboard)
@@ -90,6 +85,8 @@ public class KeyboardUtil {
             keyboard.add(keyboardRow.clone());
             keyboardRow.clear();
         }
+
+        keyboard.add(Lists.mutable.of(Button.CANCEL.toInlineKeyboardButton()));
 
         return InlineKeyboardMarkup.builder()
                 .keyboard(keyboard)
